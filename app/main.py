@@ -77,9 +77,9 @@ def resultado():
         clasificacion_presion = clasificar_presion(sistolica, diastolica)
 
         estatura_m = estatura / 100
-        imc = peso / (estatura_m ** 2)
-        imc = round(imc, 1)
+        imc = round(peso / (estatura_m ** 2), 1)
 
+        # Gráfico comparativo
         plt.figure(figsize=(6, 4))
         valores_usuario = [sistolica, diastolica, imc]
         valores_ideales = [120, 80, 24.9]
@@ -93,6 +93,7 @@ def resultado():
         plt.title('Tu presión e IMC vs valores ideales')
         plt.legend()
         plt.tight_layout()
+
         os.makedirs('app/static', exist_ok=True)
         plt.savefig('app/static/grafico_resultado.png')
         plt.close()
@@ -107,10 +108,8 @@ def resultado():
     except Exception as e:
         return f"Ocurrió un error: {str(e)}"
 
-    import os
 
-# Al final de tu main.py
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))  # Usa 8080 o el que Google defina
-    app.run(host='0.0.0.0', port=port)
-
+# Iniciar servidor (compatibilidad con Render, Railway y Cloud Run)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
