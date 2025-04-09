@@ -3,3 +3,4 @@ numpy
 joblib
 matplotlib
 requests
+gdown
