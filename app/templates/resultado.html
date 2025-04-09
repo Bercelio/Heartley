@@ -62,7 +62,9 @@
 
         <div class="datos">
             <p><strong>Presión Arterial:</strong> {{ ap_hi }}/{{ ap_lo }} mmHg ({{ fase }})</p>
-            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ bmi }}</p>
+            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ imc }}</p>
+            <p><strong>Edad:</strong> {{ edad }} años</p>
+            <p><strong>Género:</strong> {{ genero }}</p>
         </div>
 
         <div class="diagnostico">
@@ -77,7 +79,7 @@
 
         <div class="grafica">
             <h4>Comparativa de tu salud frente a valores ideales</h4>
-            <img src="/{{ imagen }}" alt="Gráfica del paciente">
+            <img src="{{ url_for('static', filename='grafico_resultado.png') }}" alt="Gráfica del paciente">
         </div>
     </div>
 </body>
