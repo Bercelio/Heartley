@@ -1,6 +1,5 @@
 flask
-joblib
-scikit-learn
-matplotlib
-pandas
 numpy
+joblib
+matplotlib
+requests
