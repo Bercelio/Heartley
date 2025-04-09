@@ -107,5 +107,10 @@ def resultado():
     except Exception as e:
         return f"Ocurrió un error: {str(e)}"
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=10000)
+    import os
+
+# Al final de tu main.py
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 8080))  # Usa 8080 o el que Google defina
+    app.run(host='0.0.0.0', port=port)
+
