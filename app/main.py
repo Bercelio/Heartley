@@ -9,30 +9,25 @@ import shutil
 
 app = Flask(__name__)
 
-# Descargar y descomprimir modelo
+# Descargar y descomprimir modelo si no está disponible
 def descargar_y_cargar_modelo():
     url = "https://drive.google.com/uc?export=download&id=1L3SdBGjZUOxL7ForTYDw64L50K6U_h2B"
-    model_path = "model/Heartly_model_17col.joblib.gz"
-    output_path = "model/Heartly_model_17col.joblib"
-
+    gz_path = "model/Heartly_model_17col.joblib.gz"
+    model_path = "model/Heartly_model_17col.joblib"
     os.makedirs("model", exist_ok=True)
 
-    if not os.path.exists(output_path):
+    if not os.path.exists(model_path):
         print("Descargando modelo comprimido desde Google Drive...")
-        gdown.download(url, model_path, quiet=False)
+        gdown.download(url, gz_path, quiet=False)
 
         print("Descomprimiendo modelo...")
-        with gzip.open(model_path, 'rb') as f_in:
-            with open(output_path, 'wb') as f_out:
+        with gzip.open(gz_path, 'rb') as f_in:
+            with open(model_path, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
 
-        print("Modelo listo.")
-    else:
-        print("Modelo ya está presente.")
+    return joblib.load(model_path)
 
-    return joblib.load(output_path)
-
-# Cargar modelo al iniciar
+# Cargar modelo
 model = descargar_y_cargar_modelo()
 
 @app.route('/')
@@ -42,24 +37,27 @@ def index():
 @app.route('/resultado', methods=['POST'])
 def resultado():
     try:
-        edad = int(request.form['edad'])
-        genero = int(request.form['genero'])
-        estatura = int(request.form['estatura'])
-        peso = int(request.form['peso'])
-        sistolica = int(request.form['sistolica'])
-        diastolica = int(request.form['diastolica'])
-        colesterol = int(request.form['colesterol'])
-        glucosa = int(request.form['glucosa'])
-        fumador = int(request.form['fumador'])
-        alcohol = int(request.form['alcohol'])
-        actividad = int(request.form['actividad'])
-        cardiovascular = int(request.form['cardio'])
+        edad = int(request.form['age'])
+        genero = int(request.form['gender'])
+        estatura = int(request.form['height'])
+        peso = int(request.form['weight'])
+        sistolica = int(request.form['ap_hi'])
+        diastolica = int(request.form['ap_lo'])
+        colesterol = int(request.form['cholesterol'])
+        glucosa = int(request.form['gluc'])
+        fumador = int(request.form['smoke'])
+        alcohol = int(request.form['alco'])
+        actividad = int(request.form['active'])
+        cardiovascular = 0  # Suponemos que no está en el formulario
 
+        # Datos para el modelo
         datos = np.array([[edad, genero, estatura, peso, sistolica, diastolica,
                            colesterol, glucosa, fumador, alcohol, actividad, cardiovascular]])
 
+        # Predicción
         resultado_modelo = model.predict(datos)[0]
 
+        # Clasificación por presión
         def clasificar_presion(s, d):
             if s < 120 and d < 80:
                 return "Normal"
@@ -74,12 +72,13 @@ def resultado():
             else:
                 return "No clasificado"
 
-        clasificacion_presion = clasificar_presion(sistolica, diastolica)
+        fase = clasificar_presion(sistolica, diastolica)
 
+        # IMC
         estatura_m = estatura / 100
         imc = round(peso / (estatura_m ** 2), 1)
 
-        # Generar gráfica
+        # Gráfica
         plt.figure(figsize=(6, 4))
         valores_usuario = [sistolica, diastolica, imc]
         valores_ideales = [120, 80, 24.9]
@@ -93,20 +92,18 @@ def resultado():
         plt.title('Tu presión e IMC vs valores ideales')
         plt.legend()
         plt.tight_layout()
-        os.makedirs('app/static', exist_ok=True)
-        plt.savefig('app/static/grafico_resultado.png')
+        os.makedirs('static', exist_ok=True)
+        ruta_imagen = 'static/grafico_resultado.png'
+        plt.savefig(ruta_imagen)
         plt.close()
 
         return render_template('resultado.html',
-                               resultado=resultado_modelo,
-                               clasificacion=clasificacion_presion,
-                               imc=imc,
-                               edad=edad,
-                               genero="Femenino" if genero == 1 else "Masculino",
                                ap_hi=sistolica,
                                ap_lo=diastolica,
-                               fase=clasificacion_presion,
-                               imagen='app/static/grafico_resultado.png')
+                               fase=fase,
+                               bmi=imc,
+                               resultado=resultado_modelo,
+                               imagen=ruta_imagen)
 
     except Exception as e:
         return f"Ocurrió un error: {str(e)}"
@@ -114,4 +111,3 @@ def resultado():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
-
