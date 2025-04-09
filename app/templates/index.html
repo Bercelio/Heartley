@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heartly | Diagnóstico</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f8fb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .formulario {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        .formulario h2 {
+            text-align: center;
+            color: #0056b3;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            margin-top: 25px;
+            width: 100%;
+            background-color: #0097a7;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #007c91;
+        }
+        img {
+            width: 180px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <img src="/static/logo.png" alt="Heartly Logo">
+    <div class="formulario">
+        <h2>Diagnóstico de Salud Cardiovascular</h2>
+        <form action="/resultado" method="post">
+            <label>Edad:</label>
+            <input type="number" name="age" required>
+
+            <label>Género:</label>
+            <select name="gender">
+                <option value="1">Femenino</option>
+                <option value="2">Masculino</option>
+            </select>
+
+            <label>Estatura (cm):</label>
+            <input type="number" name="height" required>
+
+            <label>Peso (kg):</label>
+            <input type="number" name="weight" required>
+
+            <label>Presión Sistólica:</label>
+            <input type="number" name="ap_hi" required>
+
+            <label>Presión Diastólica:</label>
+            <input type="number" name="ap_lo" required>
+
+            <label>Colesterol:</label>
+            <select name="cholesterol">
+                <option value="1">Normal</option>
+                <option value="2">Elevado</option>
+                <option value="3">Muy elevado</option>
+            </select>
+
+            <label>Glucosa:</label>
+            <select name="gluc">
+                <option value="1">Normal</option>
+                <option value="2">Elevada</option>
+                <option value="3">Muy elevada</option>
+            </select>
+
+            <label>¿Fuma?:</label>
+            <select name="smoke">
+                <option value="0">No</option>
+                <option value="1">Sí</option>
+            </select>
+
+            <label>¿Consume alcohol?:</label>
+            <select name="alco">
+                <option value="0">No</option>
+                <option value="1">Sí</option>
+            </select>
+
+            <label>¿Es físicamente activo?:</label>
+            <select name="active">
+                <option value="0">No</option>
+                <option value="1">Sí</option>
+            </select>
+
+            <button type="submit">Obtener diagnóstico</button>
+        </form>
+    </div>
+</body>
+</html>

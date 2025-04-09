@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado Heartly</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f9fc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        .resultado-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            color: #0077b6;
+        }
+        .datos, .diagnostico, .grafica {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .datos strong {
+            display: inline-block;
+            width: 180px;
+        }
+        .riesgo {
+            font-size: 22px;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .riesgo.riesgo {
+            background-color: #ffe0e0;
+            color: #b30000;
+        }
+        .riesgo.sin {
+            background-color: #d3f9d8;
+            color: #0a5d00;
+        }
+        img {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="resultado-box">
+        <h2>Informe Clínico Heartly</h2>
+
+        <div class="datos">
+            <p><strong>Presión Arterial:</strong> {{ ap_hi }}/{{ ap_lo }} mmHg ({{ fase }})</p>
+            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ bmi }}</p>
+        </div>
+
+        <div class="diagnostico">
+            <div class="riesgo {% if 'PRESENTE' in resultado %}riesgo{% else %}sin{% endif %}">
+                Diagnóstico: {{ resultado }}
+            </div>
+            <p>
+                Este diagnóstico se basa en el análisis de 17 variables clínicas y de estilo de vida.
+                Heartly interpreta tus datos para ayudarte a tomar decisiones informadas y prevenir enfermedades cardiovasculares.
+            </p>
+        </div>
+
+        <div class="grafica">
+            <h4>Comparativa de tu salud frente a valores ideales</h4>
+            <img src="/{{ imagen }}" alt="Gráfica del paciente">
+        </div>
+    </div>
+</body>
+</html>
