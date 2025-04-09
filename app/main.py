@@ -6,25 +6,26 @@ import joblib
 import os
 import matplotlib.pyplot as plt
 import gdown
+import gzip
 
 app = Flask(__name__)
 
-# Función para descargar el modelo desde Google Drive si no existe localmente
-def descargar_modelo():
-    model_path = "model/Heartly_model_17col.joblib"
+# Descargar y descomprimir modelo
+def descargar_y_cargar_modelo():
+    url = "https://drive.google.com/uc?export=download&id=1L3SdBGjZUOxL7ForTYDw64L50K6U_h2B"
+    model_path = "model/Heartly_model_17col.joblib.gz"
+    
     if not os.path.exists(model_path):
-        print("Descargando modelo desde Google Drive con gdown...")
-        url = "https://drive.google.com/uc?id=1w2dM0kW041q6NAWXeqDkHKUkdSibdqF9"
+        print("Descargando modelo comprimido desde Google Drive...")
         os.makedirs("model", exist_ok=True)
         gdown.download(url, model_path, quiet=False)
-        print("Modelo descargado correctamente.")
-    else:
-        print("Modelo ya disponible localmente.")
+        print("Modelo descargado.")
 
-descargar_modelo()
+    print("Descomprimiendo modelo en memoria...")
+    with gzip.open(model_path, 'rb') as f:
+        return joblib.load(f)
 
-# Cargar modelo
-model = joblib.load("model/Heartly_model_17col.joblib")
+model = descargar_y_cargar_modelo()
 
 @app.route('/')
 def index():
@@ -49,10 +50,8 @@ def resultado():
         datos = np.array([[edad, genero, estatura, peso, sistolica, diastolica,
                            colesterol, glucosa, fumador, alcohol, actividad, cardiovascular]])
         
-        # Predicción
         resultado_modelo = model.predict(datos)[0]
 
-        # Clasificación personalizada de presión
         def clasificar_presion(s, d):
             if s < 120 and d < 80:
                 return "Normal"
@@ -69,12 +68,9 @@ def resultado():
 
         clasificacion_presion = clasificar_presion(sistolica, diastolica)
 
-        # Cálculo de IMC
         estatura_m = estatura / 100
-        imc = peso / (estatura_m ** 2)
-        imc = round(imc, 1)
+        imc = round(peso / (estatura_m ** 2), 1)
 
-        # Gráfico de comparación
         plt.figure(figsize=(6, 4))
         valores_usuario = [sistolica, diastolica, imc]
         valores_ideales = [120, 80, 24.9]
