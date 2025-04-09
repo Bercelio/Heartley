@@ -1,5 +1,3 @@
-# app/main.py
-
 from flask import Flask, render_template, request
 import numpy as np
 import joblib
@@ -7,6 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import gdown
 import gzip
+import shutil
 
 app = Flask(__name__)
 
@@ -14,17 +13,26 @@ app = Flask(__name__)
 def descargar_y_cargar_modelo():
     url = "https://drive.google.com/uc?export=download&id=1L3SdBGjZUOxL7ForTYDw64L50K6U_h2B"
     model_path = "model/Heartly_model_17col.joblib.gz"
-    
-    if not os.path.exists(model_path):
+    output_path = "model/Heartly_model_17col.joblib"
+
+    os.makedirs("model", exist_ok=True)
+
+    if not os.path.exists(output_path):
         print("Descargando modelo comprimido desde Google Drive...")
-        os.makedirs("model", exist_ok=True)
         gdown.download(url, model_path, quiet=False)
-        print("Modelo descargado.")
 
-    print("Descomprimiendo modelo en memoria...")
-    with gzip.open(model_path, 'rb') as f:
-        return joblib.load(f)
+        print("Descomprimiendo modelo...")
+        with gzip.open(model_path, 'rb') as f_in:
+            with open(output_path, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
 
+        print("Modelo listo.")
+    else:
+        print("Modelo ya está presente.")
+
+    return joblib.load(output_path)
+
+# Cargar modelo al iniciar
 model = descargar_y_cargar_modelo()
 
 @app.route('/')
@@ -49,7 +57,7 @@ def resultado():
 
         datos = np.array([[edad, genero, estatura, peso, sistolica, diastolica,
                            colesterol, glucosa, fumador, alcohol, actividad, cardiovascular]])
-        
+
         resultado_modelo = model.predict(datos)[0]
 
         def clasificar_presion(s, d):
@@ -69,7 +77,8 @@ def resultado():
         clasificacion_presion = clasificar_presion(sistolica, diastolica)
 
         estatura_m = estatura / 100
-        imc = round(peso / (estatura_m ** 2), 1)
+        imc = peso / (estatura_m ** 2)
+        imc = round(imc, 1)
 
         plt.figure(figsize=(6, 4))
         valores_usuario = [sistolica, diastolica, imc]
@@ -81,7 +90,7 @@ def resultado():
         plt.bar(x + 0.2, valores_ideales, width=0.4, label='Ideal')
         plt.xticks(x, etiquetas)
         plt.ylabel('Valores')
-        plt.title('Comparación de tu presión e IMC vs valores ideales')
+        plt.title('Tu presión e IMC vs valores ideales')
         plt.legend()
         plt.tight_layout()
         os.makedirs('app/static', exist_ok=True)
@@ -94,10 +103,9 @@ def resultado():
                                imc=imc,
                                edad=edad,
                                genero="Femenino" if genero == 1 else "Masculino")
-    
+
     except Exception as e:
         return f"Ocurrió un error: {str(e)}"
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=10000)
