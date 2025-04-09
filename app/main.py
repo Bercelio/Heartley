@@ -1,15 +1,15 @@
+# app/main.py
+
 from flask import Flask, render_template, request
-import joblib
 import numpy as np
-import matplotlib.pyplot as plt
+import joblib
 import os
+import matplotlib.pyplot as plt
 import requests
 
 app = Flask(__name__)
 
-# ================================
-# DESCARGAR MODELO DESDE GOOGLE DRIVE SI NO EXISTE
-# ================================
+# Función para descargar el modelo desde Google Drive si no existe localmente
 def descargar_modelo():
     model_path = "model/Heartly_model_17col.joblib"
     if not os.path.exists(model_path):
@@ -19,113 +19,90 @@ def descargar_modelo():
         os.makedirs("model", exist_ok=True)
         with open(model_path, "wb") as f:
             f.write(response.content)
-        print("Modelo descargado y guardado.")
+        print("Modelo descargado.")
     else:
         print("Modelo ya disponible localmente.")
 
-# Ejecutar descarga si es necesario
 descargar_modelo()
 
-# ================================
-# CARGAR MODELO
-# ================================
-modelo = joblib.load("model/Heartly_model_17col.joblib")
+# Cargar modelo
+model = joblib.load("model/Heartly_model_17col.joblib")
 
-# ================================
-# OPCIONES Y FUNCIONES DE APOYO
-# ================================
-
-fase_opciones = [
-    'fase_presion_Crisis Hipertensiva',
-    'fase_presion_Elevada',
-    'fase_presion_Hipertensión Etapa 1',
-    'fase_presion_Hipertensión Etapa 2',
-    'fase_presion_Normal'
-]
-
-def clasificar_presion(ap_hi, ap_lo):
-    if ap_hi < 120 and ap_lo < 80:
-        return "Normal"
-    elif 120 <= ap_hi < 130 and ap_lo < 80:
-        return "Elevada"
-    elif (130 <= ap_hi < 140) or (80 <= ap_lo < 90):
-        return "Hipertensión Etapa 1"
-    elif (140 <= ap_hi) or (90 <= ap_lo):
-        return "Hipertensión Etapa 2"
-    elif ap_hi >= 180 or ap_lo >= 120:
-        return "Crisis Hipertensiva"
-    else:
-        return "No clasificada"
-
-def generar_grafica(ap_hi, ap_lo, bmi):
-    categorias = ["Presión Sistólica", "Presión Diastólica", "IMC"]
-    valores = [ap_hi, ap_lo, bmi]
-    ideales = [120, 80, 22]
-    colores = ["tomato" if v > i else "green" for v, i in zip(valores, ideales)]
-
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(categorias, valores, color=colores)
-    ax.plot(categorias, ideales, color="blue", linestyle="--", marker="o", label="Ideal")
-    for i, v in enumerate(valores):
-        ax.text(i, v + 1, f"{v:.1f}", ha='center')
-
-    ax.set_ylim(0, max(valores + ideales) + 20)
-    ax.set_title("Comparación con Valores Ideales")
-    ax.set_ylabel("Valor")
-    ax.legend()
-    ax.grid(True)
-
-    path = os.path.join("static", "grafica_resultado.png")
-    plt.tight_layout()
-    plt.savefig(path)
-    plt.close()
-    return path
-
-# ================================
-# RUTAS DE LA APLICACIÓN
-# ================================
-
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
-@app.route("/resultado", methods=["POST"])
+@app.route('/resultado', methods=['POST'])
 def resultado():
-    datos = request.form
+    try:
+        edad = int(request.form['edad'])
+        genero = int(request.form['genero'])
+        estatura = int(request.form['estatura'])
+        peso = int(request.form['peso'])
+        sistolica = int(request.form['sistolica'])
+        diastolica = int(request.form['diastolica'])
+        colesterol = int(request.form['colesterol'])
+        glucosa = int(request.form['glucosa'])
+        fumador = int(request.form['fumador'])
+        alcohol = int(request.form['alcohol'])
+        actividad = int(request.form['actividad'])
+        cardiovascular = int(request.form['cardio'])
 
-    # Obtener variables del formulario
-    edad = int(datos["age"])
-    genero = int(datos["gender"])
-    estatura = float(datos["height"])
-    peso = float(datos["weight"])
-    ap_hi = int(datos["ap_hi"])
-    ap_lo = int(datos["ap_lo"])
-    colesterol = int(datos["cholesterol"])
-    glucosa = int(datos["gluc"])
-    fuma = int(datos["smoke"])
-    alcohol = int(datos["alco"])
-    activo = int(datos["active"])
+        datos = np.array([[edad, genero, estatura, peso, sistolica, diastolica,
+                           colesterol, glucosa, fumador, alcohol, actividad, cardiovascular]])
+        
+        # Predicción
+        resultado_modelo = model.predict(datos)[0]
 
-    bmi = peso / ((estatura / 100) ** 2)
-    fase = clasificar_presion(ap_hi, ap_lo)
-    fase_codificada = [1 if f == f"fase_presion_{fase}" else 0 for f in fase_opciones]
+        # Clasificación personalizada de presión
+        def clasificar_presion(s, d):
+            if s < 120 and d < 80:
+                return "Normal"
+            elif 120 <= s <= 129 and d < 80:
+                return "Elevada"
+            elif 130 <= s <= 139 or 80 <= d <= 89:
+                return "Hipertensión etapa 1"
+            elif s >= 140 or d >= 90:
+                return "Hipertensión etapa 2"
+            elif s > 180 or d > 120:
+                return "Crisis hipertensiva"
+            else:
+                return "No clasificado"
 
-    entrada = [genero, estatura, peso, ap_hi, ap_lo, colesterol, glucosa,
-               fuma, alcohol, activo, edad, bmi] + fase_codificada
+        clasificacion_presion = clasificar_presion(sistolica, diastolica)
 
-    pred = modelo.predict([entrada])[0]
-    riesgo = "RIESGO PRESENTE" if pred == 1 else "SIN RIESGO DETECTADO"
+        # Cálculo de IMC
+        estatura_m = estatura / 100
+        imc = peso / (estatura_m ** 2)
+        imc = round(imc, 1)
 
-    # Generar gráfica
-    grafica_path = generar_grafica(ap_hi, ap_lo, bmi)
+        # Gráfico de comparación
+        plt.figure(figsize=(6, 4))
+        valores_usuario = [sistolica, diastolica, imc]
+        valores_ideales = [120, 80, 24.9]
+        etiquetas = ['Sistólica', 'Diastólica', 'IMC']
+        x = np.arange(len(etiquetas))
 
-    return render_template("resultado.html",
-                           resultado=riesgo,
-                           ap_hi=ap_hi,
-                           ap_lo=ap_lo,
-                           bmi=round(bmi, 1),
-                           fase=fase,
-                           imagen=grafica_path)
+        plt.bar(x - 0.2, valores_usuario, width=0.4, label='Tú')
+        plt.bar(x + 0.2, valores_ideales, width=0.4, label='Ideal')
+        plt.xticks(x, etiquetas)
+        plt.ylabel('Valores')
+        plt.title('Comparación de tu presión e IMC vs valores ideales')
+        plt.legend()
+        plt.tight_layout()
+        os.makedirs('app/static', exist_ok=True)
+        plt.savefig('app/static/grafico_resultado.png')
+        plt.close()
+
+        return render_template('resultado.html',
+                               resultado=resultado_modelo,
+                               clasificacion=clasificacion_presion,
+                               imc=imc,
+                               edad=edad,
+                               genero="Femenino" if genero == 1 else "Masculino")
+    
+    except Exception as e:
+        return f"Ocurrió un error: {str(e)}"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=10000)
