@@ -5,7 +5,7 @@ import numpy as np
 import joblib
 import os
 import matplotlib.pyplot as plt
-import requests
+import gdown  # Usamos gdown en lugar de requests
 
 app = Flask(__name__)
 
@@ -13,13 +13,11 @@ app = Flask(__name__)
 def descargar_modelo():
     model_path = "model/Heartly_model_17col.joblib"
     if not os.path.exists(model_path):
-        print("Descargando modelo desde Google Drive...")
-        url = "https://drive.google.com/uc?export=download&id=1w2dM0kW041q6NAWXeqDkHKUkdSibdqF9"
-        response = requests.get(url)
+        print("Descargando modelo desde Google Drive con gdown...")
+        url = "https://drive.google.com/uc?id=1w2dM0kW041q6NAWXeqDkHKUkdSibdqF9"
         os.makedirs("model", exist_ok=True)
-        with open(model_path, "wb") as f:
-            f.write(response.content)
-        print("Modelo descargado.")
+        gdown.download(url, model_path, quiet=False)
+        print("Modelo descargado correctamente.")
     else:
         print("Modelo ya disponible localmente.")
 
