@@ -4,3 +4,4 @@ joblib
 matplotlib
 requests
 gdown
+scikit-learn
