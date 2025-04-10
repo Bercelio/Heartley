@@ -61,23 +61,27 @@
         <h2>Informe Clínico Heartly</h2>
 
         <div class="datos">
-            <p><strong>Presión Arterial:</strong> {{ ap_hi }}/{{ ap_lo }} mmHg ({{ fase }})</p>
-            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ bmi }}</p>
+            <p><strong>Edad:</strong> {{ edad }} años</p>
+            <p><strong>Presión Arterial:</strong> {{ sistolica }}/{{ diastolica }} mmHg</p>
+            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ imc }}</p>
+            <p><strong>Colesterol:</strong> {{ colesterol }}</p>
+            <p><strong>Glucosa:</strong> {{ glucosa }}</p>
         </div>
 
         <div class="diagnostico">
-            <div class="riesgo {% if 'PRESENTE' in resultado %}riesgo{% else %}sin{% endif %}">
-                Diagnóstico: {{ resultado }}
+            <div class="riesgo riesgo">
+                Fase de Hipertensión: {{ fase }}
             </div>
             <p>
-                Este diagnóstico se basa en el análisis de 17 variables clínicas y de estilo de vida.
-                Heartly interpreta tus datos para ayudarte a tomar decisiones informadas y prevenir enfermedades cardiovasculares.
+                Este resultado es una predicción basada en análisis de 8 variables clínicas.
+                Heartly analiza tus datos para ayudarte a prevenir enfermedades cardiovasculares
+                y mejorar tu salud con recomendaciones personalizadas.
             </p>
         </div>
 
         <div class="grafica">
             <h4>Comparativa de tu salud frente a valores ideales</h4>
-            <img src="/{{ imagen }}" alt="Gráfica del paciente">
+            <img src="{{ url_for('static', filename='grafica_paciente.png') }}" alt="Gráfica del paciente">
         </div>
     </div>
 </body>
