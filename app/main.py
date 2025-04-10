@@ -35,27 +35,6 @@ def clasificar_fase_presion(ap_hi, ap_lo):
         return "Crisis Hipertensiva"
     else:
         return "No Clasificada"
-        
-import matplotlib.pyplot as plt  # Si no lo tienes arriba, añádelo
-
-def generar_grafica(ap_hi, ap_lo):
-    ideal_hi = 120
-    ideal_lo = 80
-    categorias = ['Sistólica', 'Diastólica']
-    paciente = [ap_hi, ap_lo]
-    ideal = [ideal_hi, ideal_lo]
-    x = range(len(categorias))
-
-    plt.figure(figsize=(6, 4))
-    plt.bar(x, ideal, width=0.4, label='Ideal', color='green')
-    plt.bar([i + 0.4 for i in x], paciente, width=0.4, label='Paciente', color='red')
-    plt.xticks([i + 0.2 for i in x], categorias)
-    plt.ylabel('Presión (mmHg)')
-    plt.title('Presión Arterial: Ideal vs Paciente')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig('static/grafica_paciente.png')
-    plt.close()
 
 @app.route('/')
 def formulario():
@@ -91,8 +70,7 @@ def resultado():
         else:
             resultado_texto = "SIN INDICIOS DE RIESGO CARDIOVASCULAR"
 
-        generar_grafica(ap_hi, ap_lo)
-imagen = "static/grafica_paciente.png"
+        imagen = "static/grafica_ejemplo.png"  # Puedes personalizar esto
 
         return render_template("resultado.html",
                        edad=edad,
@@ -114,5 +92,4 @@ imagen = "static/grafica_paciente.png"
 # ✅ Configuración para que funcione en Google Cloud Run (puerto 8080)
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
-    print("✅ Flask está arrancando en el puerto", port)
     app.run(host='0.0.0.0', port=port, debug=True)
