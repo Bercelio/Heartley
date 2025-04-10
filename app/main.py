@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 import os
 import gdown
-import matplotlib.pyplot as plt  # 👈 Importamos matplotlib para la gráfica
+import matplotlib.pyplot as plt  # 👈 Para generar la gráfica
 
 app = Flask(__name__)
 
@@ -37,7 +37,7 @@ def clasificar_fase_presion(ap_hi, ap_lo):
     else:
         return "No Clasificada"
 
-# Función para generar la gráfica
+# 🟢 Función para generar la gráfica
 def generar_grafica(ap_hi, ap_lo):
     ideal_hi = 120
     ideal_lo = 80
@@ -97,7 +97,7 @@ def resultado():
     else:
         resultado_texto = "SIN INDICIOS DE RIESGO CARDIOVASCULAR"
 
-    # 🔧 Generar la gráfica personalizada
+    # 🟢 Generar la gráfica clínica
     generar_grafica(ap_hi, ap_lo)
     imagen = "static/grafica_paciente.png"
 
@@ -109,7 +109,7 @@ def resultado():
                            resultado=resultado_texto,
                            imagen=imagen)
 
-# ⚠️ Corrección clave para Cloud Run (puerto 8080)
+# ✅ Corrección clave para Google Cloud Run
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port, debug=True)
