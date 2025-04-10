@@ -114,4 +114,5 @@ imagen = "static/grafica_paciente.png"
 # ✅ Configuración para que funcione en Google Cloud Run (puerto 8080)
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
+    print("✅ Flask está arrancando en el puerto", port)
     app.run(host='0.0.0.0', port=port, debug=True)
