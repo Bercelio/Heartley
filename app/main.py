@@ -91,7 +91,8 @@ def resultado():
         else:
             resultado_texto = "SIN INDICIOS DE RIESGO CARDIOVASCULAR"
 
-        imagen = "static/grafica_ejemplo.png"  # Puedes personalizar esto
+        generar_grafica(ap_hi, ap_lo)
+imagen = "static/grafica_paciente.png"
 
         return render_template("resultado.html",
                        edad=edad,
