@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import os
 import gdown
+import matplotlib.pyplot as plt  # 👈 Importamos matplotlib para la gráfica
 
 app = Flask(__name__)
 
@@ -35,6 +36,28 @@ def clasificar_fase_presion(ap_hi, ap_lo):
         return "Crisis Hipertensiva"
     else:
         return "No Clasificada"
+
+# Función para generar la gráfica
+def generar_grafica(ap_hi, ap_lo):
+    ideal_hi = 120
+    ideal_lo = 80
+
+    categorias = ['Sistólica', 'Diastólica']
+    paciente = [ap_hi, ap_lo]
+    ideal = [ideal_hi, ideal_lo]
+
+    x = range(len(categorias))
+
+    plt.figure(figsize=(6, 4))
+    plt.bar(x, ideal, width=0.4, label='Ideal', color='green')
+    plt.bar([i + 0.4 for i in x], paciente, width=0.4, label='Paciente', color='red')
+    plt.xticks([i + 0.2 for i in x], categorias)
+    plt.ylabel('Presión (mmHg)')
+    plt.title('Presión Arterial: Ideal vs Paciente')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('static/grafica_paciente.png')
+    plt.close()
 
 @app.route('/')
 def formulario():
@@ -74,7 +97,9 @@ def resultado():
     else:
         resultado_texto = "SIN INDICIOS DE RIESGO CARDIOVASCULAR"
 
-    imagen = "static/grafica_ejemplo.png"  # Puedes personalizar esta parte luego
+    # 🔧 Generar la gráfica personalizada
+    generar_grafica(ap_hi, ap_lo)
+    imagen = "static/grafica_paciente.png"
 
     return render_template("resultado.html",
                            ap_hi=ap_hi,
@@ -87,6 +112,4 @@ def resultado():
 # ⚠️ Corrección clave para Cloud Run (puerto 8080)
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port, debug=True)
-iron.get("PORT", 8080))  # Cloud Run espera el 8080
     app.run(host='0.0.0.0', port=port, debug=True)
