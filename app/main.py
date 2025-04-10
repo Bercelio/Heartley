@@ -35,6 +35,27 @@ def clasificar_fase_presion(ap_hi, ap_lo):
         return "Crisis Hipertensiva"
     else:
         return "No Clasificada"
+        
+import matplotlib.pyplot as plt  # Si no lo tienes arriba, añádelo
+
+def generar_grafica(ap_hi, ap_lo):
+    ideal_hi = 120
+    ideal_lo = 80
+    categorias = ['Sistólica', 'Diastólica']
+    paciente = [ap_hi, ap_lo]
+    ideal = [ideal_hi, ideal_lo]
+    x = range(len(categorias))
+
+    plt.figure(figsize=(6, 4))
+    plt.bar(x, ideal, width=0.4, label='Ideal', color='green')
+    plt.bar([i + 0.4 for i in x], paciente, width=0.4, label='Paciente', color='red')
+    plt.xticks([i + 0.2 for i in x], categorias)
+    plt.ylabel('Presión (mmHg)')
+    plt.title('Presión Arterial: Ideal vs Paciente')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('static/grafica_paciente.png')
+    plt.close()
 
 @app.route('/')
 def formulario():
