@@ -12,13 +12,13 @@ if not os.path.exists("heartly_model.pkl"):
     url = "https://drive.google.com/uc?id=1EHLpKvhgAn7OBrmdxxOaNRG7gpJsOqC9"
     gdown.download(url, "heartly_model.pkl", quiet=False)
 
-# Cargar modelo
+# Cargar el modelo
 with open("heartly_model.pkl", "rb") as f:
     model = pickle.load(f)
 
 # Función para calcular IMC
-def calcular_imc(peso, estatura):
-    estatura_m = estatura / 100
+def calcular_imc(peso, estatura_cm):
+    estatura_m = estatura_cm / 100
     return round(peso / (estatura_m ** 2), 2)
 
 # Clasificar fase de presión arterial
@@ -36,15 +36,13 @@ def clasificar_fase_presion(ap_hi, ap_lo):
     else:
         return "No Clasificada"
 
-# Página de inicio
 @app.route('/')
 def formulario():
     return render_template("index.html")
 
-# Página de resultado
 @app.route('/resultado', methods=['POST'])
 def resultado():
-    # Datos del formulario
+    # Obtener datos del formulario
     edad = int(request.form['age'])
     genero = int(request.form['gender'])
     altura = int(request.form['height'])
@@ -57,18 +55,18 @@ def resultado():
     alcohol = int(request.form['alco'])
     activo = int(request.form['active'])
 
-    # Datos para el modelo (sin cardio)
+    # Armar datos para el modelo (sin cardio)
     entrada_modelo = np.array([[edad, genero, altura, peso, ap_hi, ap_lo,
                                 colesterol, glucosa, fuma, alcohol, activo]])
 
-    # Predicción del riesgo cardiovascular
+    # Predicción del riesgo
     prediccion = model.predict(entrada_modelo)[0]
 
-    # Cálculos adicionales
+    # IMC y Fase de hipertensión
     imc = calcular_imc(peso, altura)
     fase = clasificar_fase_presion(ap_hi, ap_lo)
 
-    # Interpretación del riesgo
+    # Interpretación clínica
     if prediccion == 2:
         resultado_texto = "RIESGO CARDIOVASCULAR ALTO - PRESENTE"
     elif prediccion == 1:
@@ -76,8 +74,7 @@ def resultado():
     else:
         resultado_texto = "SIN INDICIOS DE RIESGO CARDIOVASCULAR"
 
-    # Imagen estática (puedes reemplazar luego por una generada)
-    imagen = "static/grafica_ejemplo.png"
+    imagen = "static/grafica_ejemplo.png"  # Puedes personalizar esta parte luego
 
     return render_template("resultado.html",
                            ap_hi=ap_hi,
@@ -87,9 +84,9 @@ def resultado():
                            resultado=resultado_texto,
                            imagen=imagen)
 
-# Lanzar servidor
-import os
-
+# ⚠️ Corrección clave para Cloud Run (puerto 8080)
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))  # Cloud Run espera el 8080
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)
+iron.get("PORT", 8080))  # Cloud Run espera el 8080
     app.run(host='0.0.0.0', port=port, debug=True)
