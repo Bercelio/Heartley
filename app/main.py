@@ -1,18 +1,27 @@
 from flask import Flask, render_template, request
-import pickle
 import numpy as np
+import pickle
+import os
+import gdown
 
 app = Flask(__name__)
+
+# Descargar el modelo desde Google Drive si no existe
+if not os.path.exists("heartly_model.pkl"):
+    print("🔽 Descargando modelo desde Google Drive...")
+    url = "https://drive.google.com/uc?id=1EHLpKvhgAn7OBrmdxxOaNRG7gpJsOqC9"
+    gdown.download(url, "heartly_model.pkl", quiet=False)
 
 # Cargar modelo
 with open("heartly_model.pkl", "rb") as f:
     model = pickle.load(f)
 
-# Funciones auxiliares
+# Función para calcular IMC
 def calcular_imc(peso, estatura):
     estatura_m = estatura / 100
     return round(peso / (estatura_m ** 2), 2)
 
+# Clasificar fase de presión arterial
 def clasificar_fase_presion(ap_hi, ap_lo):
     if ap_hi < 120 and ap_lo < 80:
         return "Normal"
@@ -27,13 +36,15 @@ def clasificar_fase_presion(ap_hi, ap_lo):
     else:
         return "No Clasificada"
 
+# Página de inicio
 @app.route('/')
 def formulario():
     return render_template("index.html")
 
+# Página de resultado
 @app.route('/resultado', methods=['POST'])
 def resultado():
-    # Obtener datos del formulario
+    # Datos del formulario
     edad = int(request.form['age'])
     genero = int(request.form['gender'])
     altura = int(request.form['height'])
@@ -45,35 +56,37 @@ def resultado():
     fuma = int(request.form['smoke'])
     alcohol = int(request.form['alco'])
     activo = int(request.form['active'])
-    cardio = int(request.form['cardio'])  # solo para análisis, no entra al modelo
 
-    # Datos al modelo (excluye 'cardio')
+    # Datos para el modelo (sin cardio)
     entrada_modelo = np.array([[edad, genero, altura, peso, ap_hi, ap_lo,
                                 colesterol, glucosa, fuma, alcohol, activo]])
-    
-    # Predicción
+
+    # Predicción del riesgo cardiovascular
     prediccion = model.predict(entrada_modelo)[0]
 
-    # Análisis clínico
+    # Cálculos adicionales
     imc = calcular_imc(peso, altura)
     fase = clasificar_fase_presion(ap_hi, ap_lo)
 
-    # Diagnóstico interpretativo
+    # Interpretación del riesgo
     if prediccion == 2:
-        nivel = "Alto"
-        mensaje = "Alto riesgo cardiovascular. Requiere atención médica inmediata."
+        resultado_texto = "RIESGO CARDIOVASCULAR ALTO - PRESENTE"
     elif prediccion == 1:
-        nivel = "Medio"
-        mensaje = "Riesgo moderado. Se recomienda mejorar hábitos de salud y realizar chequeos periódicos."
+        resultado_texto = "RIESGO CARDIOVASCULAR MODERADO - POSIBLE"
     else:
-        nivel = "Bajo"
-        mensaje = "Buen estado general. Mantén un estilo de vida saludable."
+        resultado_texto = "SIN INDICIOS DE RIESGO CARDIOVASCULAR"
 
-    # Análisis histórico
-    historico = "El paciente ha tenido diagnóstico previo de enfermedad cardiovascular." if cardio == 1 else "No se reporta diagnóstico previo de enfermedad cardiovascular."
+    # Imagen estática (puedes reemplazar luego por una generada)
+    imagen = "static/grafica_ejemplo.png"
 
     return render_template("resultado.html",
-                           edad=edad, genero=genero, altura=altura, peso=peso,
-                           ap_hi=ap_hi, ap_lo=ap_lo, colesterol=colesterol, glucosa=glucosa,
-                           fuma=fuma, alcohol=alcohol, activo=activo,
-                           imc=imc, fase=fase, nivel=nivel, mensaje=mensaje, historico=historico)
+                           ap_hi=ap_hi,
+                           ap_lo=ap_lo,
+                           fase=fase,
+                           bmi=imc,
+                           resultado=resultado_texto,
+                           imagen=imagen)
+
+# Lanzar servidor
+if __name__ == '__main__':
+    app.run(debug=True)
