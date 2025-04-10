@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-color: #f5f9fc;
+            background-color: #f0f8ff;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -23,6 +23,7 @@
         }
         h2 {
             color: #0077b6;
+            margin-bottom: 10px;
         }
         .datos, .diagnostico, .grafica {
             margin-top: 20px;
@@ -30,18 +31,22 @@
         }
         .datos strong {
             display: inline-block;
-            width: 180px;
+            width: 220px;
         }
         .riesgo {
             font-size: 22px;
             margin: 20px 0;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: bold;
         }
-        .riesgo.riesgo {
+        .riesgo.alto {
             background-color: #ffe0e0;
             color: #b30000;
+        }
+        .riesgo.moderado {
+            background-color: #fff7cc;
+            color: #996600;
         }
         .riesgo.sin {
             background-color: #d3f9d8;
@@ -49,7 +54,7 @@
         }
         img {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             margin-top: 15px;
             border-radius: 10px;
             border: 1px solid #ddd;
@@ -58,31 +63,33 @@
 </head>
 <body>
     <div class="resultado-box">
-        <h2>Informe Clínico Heartly</h2>
+        <h2>🧠 Diagnóstico Personalizado con Heartly</h2>
 
         <div class="datos">
-            <p><strong>Edad:</strong> {{ edad }} años</p>
-            <p><strong>Presión Arterial:</strong> {{ sistolica }}/{{ diastolica }} mmHg</p>
-            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ imc }}</p>
-            <p><strong>Colesterol:</strong> {{ colesterol }}</p>
-            <p><strong>Glucosa:</strong> {{ glucosa }}</p>
+            <p><strong>Presión Arterial:</strong> {{ ap_hi }}/{{ ap_lo }} mmHg</p>
+            <p><strong>Fase de Hipertensión:</strong> {{ fase }}</p>
+            <p><strong>Índice de Masa Corporal (IMC):</strong> {{ bmi }}</p>
         </div>
 
         <div class="diagnostico">
-            <div class="riesgo riesgo">
-                Fase de Hipertensión: {{ fase }}
+            <div class="riesgo
+                {% if 'ALTO' in resultado %}alto
+                {% elif 'MODERADO' in resultado %}moderado
+                {% else %}sin
+                {% endif %}">
+                Diagnóstico: {{ resultado }}
             </div>
             <p>
-                Este resultado es una predicción basada en análisis de 8 variables clínicas.
-                Heartly analiza tus datos para ayudarte a prevenir enfermedades cardiovasculares
-                y mejorar tu salud con recomendaciones personalizadas.
+                Este informe se basa en variables clínicas clave para ayudarte a comprender tu salud cardiovascular.
+                Heartly analiza tus datos de forma inteligente para orientarte hacia decisiones preventivas.
             </p>
         </div>
 
         <div class="grafica">
-            <h4>Comparativa de tu salud frente a valores ideales</h4>
-            <img src="{{ url_for('static', filename='grafica_paciente.png') }}" alt="Gráfica del paciente">
+            <h4>📊 Comparativa frente a valores ideales</h4>
+            <img src="/{{ imagen }}" alt="Gráfica de presión arterial del paciente">
         </div>
     </div>
 </body>
 </html>
+
