@@ -88,5 +88,8 @@ def resultado():
                            imagen=imagen)
 
 # Lanzar servidor
+import os
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8080))  # Cloud Run espera el 8080
+    app.run(host='0.0.0.0', port=port, debug=True)
