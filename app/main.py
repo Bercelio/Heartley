@@ -73,12 +73,19 @@ def resultado():
         imagen = "static/grafica_ejemplo.png"  # Puedes personalizar esto
 
         return render_template("resultado.html",
-                               ap_hi=ap_hi,
-                               ap_lo=ap_lo,
-                               fase=fase,
-                               bmi=imc,
-                               resultado=resultado_texto,
-                               imagen=imagen)
+                       edad=edad,
+                       genero=genero,
+                       altura=altura,
+                       peso=peso,
+                       colesterol=colesterol,
+                       glucosa=glucosa,
+                       ap_hi=ap_hi,
+                       ap_lo=ap_lo,
+                       fase=fase,
+                       bmi=imc,
+                       resultado=resultado_texto,
+                       imagen=imagen)
+
     except Exception as e:
         return f"❌ Error al procesar los datos:<br><pre>{e}</pre>"
 
